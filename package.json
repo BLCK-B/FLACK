@@ -1,0 +1,25 @@
+{
+	"name": "electrobun-vue",
+	"version": "1.0.0",
+	"type": "module",
+	"description": "Electrobun app with Vue and Vite HMR",
+	"scripts": {
+		"dev": "concurrently \"bun run dev:port\" \"bun run prodrun\"",
+		"dev:port": "vite --port 5173",
+		"dev:nohmr": "electrobun dev --watch",
+		"prodrun": "vite build && electrobun dev",
+		"build:canary": "vite build && electrobun build --env=canary"
+	},
+	"dependencies": {
+		"electrobun": "1.16.0"
+	},
+	"devDependencies": {
+		"@types/bun": "latest",
+		"@vitejs/plugin-vue": "^6.0.6",
+		"concurrently": "^9.1.0",
+		"typescript": "^5.7.2",
+		"vite": "^8.0.8",
+		"vue": "^3.5.13",
+		"vue-tsc": "^2.2.0"
+	}
+}
