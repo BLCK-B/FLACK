@@ -4,14 +4,16 @@
 	"type": "module",
 	"description": "Electrobun app with Vue and Vite HMR",
 	"scripts": {
-		"dev": "concurrently \"bun run dev:port\" \"bun run prodrun\"",
+		"dev": "concurrently \"bun run dev:port\" \"bun run dev:nohmr\"",
 		"dev:port": "vite --port 5173",
 		"dev:nohmr": "electrobun dev --watch",
 		"prodrun": "vite build && electrobun dev",
 		"build:canary": "vite build && electrobun build --env=canary"
 	},
 	"dependencies": {
-		"electrobun": "1.16.0"
+		"electrobun": "1.16.0",
+		"music-metadata": "^11.12.3",
+		"pinia": "^3.0.4"
 	},
 	"devDependencies": {
 		"@types/bun": "latest",
