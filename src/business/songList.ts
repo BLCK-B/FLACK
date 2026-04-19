@@ -25,7 +25,8 @@ export async function getSongs(): Promise<Song[]> {
                     name: common.title || f,
                     date,
                     artists,
-                    thumbnailUrl: `http://localhost:50001/thumbnail?filepath=${encodeURIComponent(filepath.replace(/\\/g, "/"))}`
+                    thumbnailUrl: `http://localhost:50001/thumbnail?filepath=${encodeURIComponent(filepath.replace(/\\/g, "/"))}`,
+                    audioUrl: `http://localhost:50001/audio?filepath=${encodeURIComponent(filepath.replace(/\\/g, "/"))}`,
                 };
             } catch (err) {
                 console.error(`Error reading metadata for ${f}`, err);
@@ -34,7 +35,8 @@ export async function getSongs(): Promise<Song[]> {
                     name: f,
                     date: new Date(),
                     artists: [],
-                    thumbnailUrl: ''
+                    thumbnailUrl: '',
+                    audioUrl: '',
                 };
             }
         })
@@ -59,6 +61,42 @@ export const getThumbnailStream = async (filepath: string): Promise<Response> =>
         headers: {
             "Content-Type": cover.format || "image/jpeg",
             "Cache-Control": "public, max-age=31536000",
+        },
+    });
+};
+
+export const getAudioStream = async (filepath: string, req: Request): Promise<Response> => {
+    if (!filepath) {
+        return new Response("Missing filepath", { status: 400 });
+    }
+
+    const file = Bun.file(filepath);
+    const fileSize = file.size;
+
+    const range = req.headers.get("range");
+
+    if (range) {
+        const parts = range.replace(/bytes=/, "").split("-");
+        const start = parseInt(parts[0], 10);
+        const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
+
+        const chunk = file.slice(start, end + 1);
+
+        return new Response(chunk, {
+            status: 206,
+            headers: {
+                "Content-Range": `bytes ${start}-${end}/${fileSize}`,
+                "Accept-Ranges": "bytes",
+                "Content-Length": `${end - start + 1}`,
+                "Content-Type": "audio/mpeg",
+            },
+        });
+    }
+
+    return new Response(file, {
+        headers: {
+            "Content-Type": "audio/mpeg",
+            "Content-Length": fileSize.toString(),
         },
     });
 };

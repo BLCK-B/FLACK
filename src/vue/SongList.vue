@@ -16,6 +16,7 @@ import {RPC} from "../bun";
 import {onMounted, ref} from "vue";
 import {Song} from "../types/musicTypes";
 import {useStore} from "./store";
+import {play} from "./player";
 
 const rpc = Electroview.defineRPC<RPC>({
   maxRequestTime: 10000,
@@ -37,6 +38,8 @@ onMounted(async () => {
 
 const setSong = (song: Song) => {
   store.setSelectedSong(song);
+  play(song);
+  store.setIsPlaying(true);
 }
 </script>
 

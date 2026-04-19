@@ -4,4 +4,5 @@ export type Song = {
     date: Date;
     artists: string[];
     thumbnailUrl: string;
+    audioUrl: string;
 }

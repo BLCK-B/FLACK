@@ -1,5 +1,5 @@
 import {BrowserView, BrowserWindow, RPCSchema, Updater} from "electrobun/bun";
-import {getSongs, getThumbnailStream} from "../business/songList";
+import {getAudioStream, getSongs, getThumbnailStream} from "../business/songList";
 import {Song} from "../types/musicTypes";
 import { serve } from "bun";
 
@@ -35,6 +35,10 @@ serve({
         if (url.pathname === "/thumbnail") {
             const filepath = url.searchParams.get("filepath");
             return getThumbnailStream(filepath || "");
+        }
+        if (url.pathname === "/audio") {
+            const filepath = url.searchParams.get("filepath");
+            return getAudioStream(filepath || "", req);
         }
         return new Response("Not found", { status: 404 });
     },
