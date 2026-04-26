@@ -55,9 +55,18 @@ export function toggleMute() {
     }
 }
 
+let onEndedCallback: (() => void) | null = null;
+
+export function onEnded(cb: () => void) {
+    onEndedCallback = cb;
+}
+
 audio.onplay = () => (isPlaying.value = true);
 audio.onpause = () => (isPlaying.value = false);
-audio.onended = () => (isPlaying.value = false);
+audio.onended = () => {
+    isPlaying.value = false;
+    onEndedCallback?.();
+};
 
 audio.ontimeupdate = () => {
     currentTime.value = audio.currentTime || 0;

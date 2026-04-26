@@ -65,6 +65,25 @@ export const getThumbnailStream = async (filepath: string): Promise<Response> =>
     });
 };
 
+const mimeTypes: Record<string, string> = {
+    ".mp3": "audio/mpeg",
+    ".aac": "audio/aac",
+    ".wav": "audio/wav",
+    ".flac": "audio/flac",
+    ".ogg": "audio/ogg",
+    ".opus": "audio/opus",
+    ".m4a": "audio/mp4",
+    ".mp4": "audio/mp4",
+    ".weba": "audio/webm",
+    ".webm": "audio/webm",
+};
+
+const getMimeType = (filepath: string): string => {
+    const extension = path.extname(filepath).toLowerCase();
+    return mimeTypes[extension] || "application/octet-stream";
+};
+
+
 export const getAudioStream = async (filepath: string, req: Request): Promise<Response> => {
     if (!filepath) {
         return new Response("Missing filepath", { status: 400 });
@@ -73,6 +92,7 @@ export const getAudioStream = async (filepath: string, req: Request): Promise<Re
     const file = Bun.file(filepath);
     const fileSize = file.size;
 
+    const contentType = getMimeType(filepath);
     const range = req.headers.get("range");
 
     if (range) {
@@ -88,14 +108,14 @@ export const getAudioStream = async (filepath: string, req: Request): Promise<Re
                 "Content-Range": `bytes ${start}-${end}/${fileSize}`,
                 "Accept-Ranges": "bytes",
                 "Content-Length": `${end - start + 1}`,
-                "Content-Type": "audio/mpeg",
+                "Content-Type": contentType,
             },
         });
     }
 
     return new Response(file, {
         headers: {
-            "Content-Type": "audio/mpeg",
+            "Content-Type": contentType,
             "Content-Length": fileSize.toString(),
         },
     });

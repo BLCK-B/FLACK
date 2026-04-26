@@ -1,5 +1,5 @@
 import {BrowserView, BrowserWindow, RPCSchema, Updater} from "electrobun/bun";
-import {getAudioStream, getSongs, getThumbnailStream} from "../business/songList";
+import {getAudioStream, getSongs, getThumbnailStream} from "../business/dataLoading";
 import {Song} from "../types/musicTypes";
 import { serve } from "bun";
 
@@ -70,7 +70,7 @@ async function getBusinessUrl(): Promise<string> {
 const url = await getBusinessUrl();
 
 const mainWindow = new BrowserWindow({
-    title: "Vue App",
+    title: "FLACK",
     url,
     rpc: musicRPC,
     frame: {
@@ -80,5 +80,3 @@ const mainWindow = new BrowserWindow({
         y: 200,
     },
 });
-
-console.log("Vue app started!");

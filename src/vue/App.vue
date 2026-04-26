@@ -21,6 +21,11 @@ main {
   overflow: hidden;
 }
 
+*,
+html {
+  scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+}
+
 .container {
   height: 88vh;
   flex-direction: column;

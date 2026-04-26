@@ -1,7 +1,7 @@
 <template>
   <div class="grid">
-    <div v-for="song in songs" :key="song.name + song.artists" class="card" :class="{ selected: store.selectedSong?.name === song.name }" @click="setSong(song)">
-      <img :src="song.thumbnailUrl" alt="cover" class="thumbnail"/>
+    <div v-for="song in store.queue" :key="song.name + song.artists" class="card" :class="{ selected: firstSelect === song, playing: currentSong === song }" @click="selectSong(song)">
+      <img :src="song.thumbnailUrl" alt="cover" class="thumbnail" loading="lazy" decoding="async"/>
       <div class="songinfo">
         <p> {{ song.name }} </p>
         <p class="smaller"> {{ song.artists.join(", ") }} </p>
@@ -16,7 +16,7 @@ import {RPC} from "../bun";
 import {onMounted, ref} from "vue";
 import {Song} from "../types/musicTypes";
 import {useStore} from "./store";
-import {play} from "./player";
+import {play, currentSong} from "./player";
 
 const rpc = Electroview.defineRPC<RPC>({
   maxRequestTime: 10000,
@@ -30,13 +30,20 @@ const electrobun = new Electrobun.Electroview({rpc});
 
 const store = useStore();
 
-const songs = ref<Song[]>([]);
+const firstSelect = ref<Song>();
 
 onMounted(async () => {
-  songs.value = await electrobun.rpc!.request.GETsongs({});
+  store.queue = await electrobun.rpc!.request.GETsongs({});
+  if (!store.selectedSong) {
+    store.selectedSong = store.queue[0];
+  }
 })
 
-const setSong = (song: Song) => {
+const selectSong = (song: Song) => {
+  if (firstSelect.value !== song) {
+    firstSelect.value = song;
+    return;
+  }
   store.setSelectedSong(song);
   play(song);
   store.setIsPlaying(true);
@@ -44,8 +51,18 @@ const setSong = (song: Song) => {
 </script>
 
 <style scoped>
+.songinfo {
+  text-align: center;
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+}
+
 .songinfo p {
   margin: 0.25rem 0;
+  //white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .grid {
@@ -77,5 +94,9 @@ const setSong = (song: Song) => {
 
 .selected {
   background-color: rgba(255, 255, 255, 0.15);
+}
+
+.playing {
+  background-color: rgba(255, 255, 255, 0.25);
 }
 </style>
