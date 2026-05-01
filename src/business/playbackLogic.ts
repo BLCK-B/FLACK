@@ -1,6 +1,6 @@
 import {Song} from "../types/musicTypes";
 
-export function createQueue(songs: Song[]): Song[] {
+export function createShuffledQueue(songs: Song[]): Song[] {
     const queue = [...songs];
 
     for (let i = queue.length - 1; i > 0; i--) {

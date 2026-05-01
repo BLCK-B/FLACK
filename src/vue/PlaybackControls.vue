@@ -36,7 +36,7 @@
         <span class="time">
           {{ `${formatTime(currentTime)} / ${formatTime(duration)}` }}
         </span>
-        <span class="speaker" @click="toggleMute">
+        <span class="speaker" @click="toggleMute" @wheel.prevent="onWheelChange">
           <SpeakerVolume v-if="volume > 0"/>
           <SpeakerSilent v-else/>
         </span>
@@ -50,6 +50,9 @@
             @input="onVolumeChange"
             @wheel.prevent="onWheelChange"
         />
+        <button>
+          <SettingsIcon class="icon" style="margin-left: 15px"/>
+        </button>
       </div>
     </div>
   </div>
@@ -77,6 +80,7 @@ import SkipNextIcon from "@/icons/skipNextIcon.svg";
 import ShuffleIcon from "@/icons/shuffleIcon.svg";
 import SpeakerVolume from "@/icons/speakerVolume.svg";
 import SpeakerSilent from "@/icons/speakerSilent.svg";
+import SettingsIcon from "@/icons/settingsIcon.svg";
 import {computed, onMounted} from "vue";
 
 const store = useStore();
@@ -217,7 +221,7 @@ p {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  margin-bottom: 5px;
+  margin-bottom: 4px;
 }
 
 .right-controls input {
@@ -245,6 +249,12 @@ p {
 }
 
 .middle-controls button {
+  background: transparent;
+  color: white;
+  border: none;
+}
+
+.right-controls button {
   background: transparent;
   color: white;
   border: none;

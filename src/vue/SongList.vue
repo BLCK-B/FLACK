@@ -16,7 +16,8 @@ import {RPC} from "../bun";
 import {onMounted, ref} from "vue";
 import {Song} from "../types/musicTypes";
 import {useStore} from "./store";
-import {play, currentSong} from "./player";
+import {play, currentSong, restoreCurrentTime} from "./player";
+import {areQueuesEqual, getSongKey} from "@/songUtils";
 
 const rpc = Electroview.defineRPC<RPC>({
   maxRequestTime: 10000,
@@ -33,14 +34,38 @@ const store = useStore();
 const firstSelect = ref<Song>();
 
 onMounted(async () => {
-  store.queue = await electrobun.rpc!.request.GETsongs({});
-  if (!store.selectedSong) {
-    store.selectedSong = store.queue[0];
+  const rawQueue = localStorage.getItem("queue");
+  const queue = rawQueue ? JSON.parse(rawQueue) : null;
+  const fetchedQueue = await electrobun.rpc!.request.GETsongs({});
+
+  if (queue) {
+    if (!areQueuesEqual(queue, fetchedQueue)) {
+      store.setQueue(fetchedQueue);
+      store.shuffleQueue();
+    }
+    else {
+      store.setQueue(queue);
+      const rawSelected = localStorage.getItem("selected-song");
+      const selectedSong = rawSelected ? JSON.parse(rawSelected) : null;
+      if (selectedSong) {
+        selectSong(selectedSong);
+        selectSong(selectedSong);
+        restoreCurrentTime();
+      }
+    }
+  } else {
+   store.setQueue(fetchedQueue);
   }
+
+  if (!store.selectedSong) {
+    selectSong(store.queue[0]);
+    selectSong(store.queue[0]);
+  }
+  store.setIsPlaying(false);
 })
 
 const selectSong = (song: Song) => {
-  if (firstSelect.value !== song) {
+  if (getSongKey(firstSelect.value) !== getSongKey(song)) {
     firstSelect.value = song;
     return;
   }

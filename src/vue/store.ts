@@ -1,6 +1,6 @@
-import { defineStore } from 'pinia'
+import {defineStore} from 'pinia'
 import {Song} from "../types/musicTypes";
-import {createQueue} from "../business/playbackLogic";
+import {createShuffledQueue} from "../business/playbackLogic";
 
 export const useStore = defineStore('store', {
     state: () => ({
@@ -11,15 +11,20 @@ export const useStore = defineStore('store', {
     actions: {
         setSelectedSong(selectedSong: Song | undefined) {
             this.selectedSong = selectedSong;
+            if (selectedSong) {
+                localStorage.setItem("selected-song", JSON.stringify(selectedSong));
+            }
         },
         setIsPlaying(isPlaying: boolean) {
             this.isPlaying = isPlaying;
         },
         setQueue(queue: Song[]) {
             this.queue = queue;
+            localStorage.setItem("queue", JSON.stringify(queue));
         },
         shuffleQueue() {
-            this.queue = createQueue(this.queue);
+            this.queue = createShuffledQueue(this.queue);
+            localStorage.setItem("queue", JSON.stringify(this.queue));
         },
     },
 })
