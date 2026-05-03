@@ -9,7 +9,7 @@
 		"dev:nohmr": "electrobun dev --watch",
 		"prodrun": "vite build && electrobun dev",
 		"build:debug": "vite build && electrobun build --env=debug",
-		"build": "electrobun build --release"
+		"build": "vite build && electrobun build --env=stable"
 	},
 	"dependencies": {
 		"electrobun": "1.16.0",
