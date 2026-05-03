@@ -44,12 +44,12 @@ jobs:
         with:
           name: build-${{ matrix.os }}
           path: |
-            dist/*.dmg
-            dist/*.zip
-            dist/*.exe
-            dist/*.AppImage
-            dist/*.snap
-          if-no-files-found: ignore
+            artifacts/*.dmg
+            artifacts/*.zip
+            artifacts/*.exe
+            artifacts/*.AppImage
+            artifacts/*.snap
+          if-no-files-found: warn
 
   release:
     needs: build

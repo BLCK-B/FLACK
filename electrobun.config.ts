@@ -10,14 +10,6 @@ export default {
 		exitOnLastWindowClosed: true,
 	},
 	build: {
-		useAsar: true,
-		asarUnpack: [
-			"*.node",           // Native modules
-			"*.dll",            // Windows DLLs
-			"*.dylib",          // macOS dynamic libraries
-			"*.so",             // Linux shared objects
-			"data/large/**/*",  // Large data files
-		],
 		bun: {
 			entrypoint: "src/bun/index.ts",
 		},
