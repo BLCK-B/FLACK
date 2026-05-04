@@ -13,11 +13,11 @@
 <script setup lang="ts">
 import Electrobun, {Electroview} from "electrobun/view";
 import {RPC} from "../bun";
-import {onMounted, ref} from "vue";
+import {onMounted, ref, watch} from "vue";
 import {Song} from "../types/musicTypes";
 import {useStore} from "./store";
 import {play, currentSong, restoreCurrentTime} from "./player";
-import {areQueuesEqual, getSongKey} from "@/songUtils";
+import {areQueuesEqual, getSongKey} from "./songUtils";
 
 const rpc = Electroview.defineRPC<RPC>({
   maxRequestTime: 10000,
@@ -33,10 +33,14 @@ const store = useStore();
 
 const firstSelect = ref<Song>();
 
-onMounted(async () => {
+const loadQueue = async () => {
+  const stored = localStorage.getItem("music-paths");
+  if (!stored) return;
+  store.setDirPaths(JSON.parse(stored));
+
   const rawQueue = localStorage.getItem("queue");
   const queue = rawQueue ? JSON.parse(rawQueue) : null;
-  const fetchedQueue = await electrobun.rpc!.request.GETsongs({});
+  const fetchedQueue = await electrobun.rpc!.request.GETsongs({dirPaths: store.dirPaths});
 
   if (queue) {
     if (!areQueuesEqual(queue, fetchedQueue)) {
@@ -54,7 +58,7 @@ onMounted(async () => {
       }
     }
   } else {
-   store.setQueue(fetchedQueue);
+    store.setQueue(fetchedQueue);
   }
 
   if (!store.selectedSong) {
@@ -62,9 +66,26 @@ onMounted(async () => {
     selectSong(store.queue[0]);
   }
   store.setIsPlaying(false);
+};
+
+watch(
+    () => store.isSettingsOpen,
+    (newValue) => {
+      if (!newValue) {
+        loadQueue();
+      }
+    }
+);
+
+onMounted(async () => {
+  await loadQueue();
 })
 
 const selectSong = (song: Song) => {
+  if (!firstSelect.value) {
+    firstSelect.value = song;
+    return;
+  }
   if (getSongKey(firstSelect.value) !== getSongKey(song)) {
     firstSelect.value = song;
     return;

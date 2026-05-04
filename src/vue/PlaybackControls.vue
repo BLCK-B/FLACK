@@ -51,7 +51,7 @@
             @wheel.prevent="onWheelChange"
         />
         <button>
-          <SettingsIcon class="icon" style="margin-left: 15px"/>
+          <SettingsIcon class="icon" style="margin-left: 15px" @click="openSettings"/>
         </button>
       </div>
     </div>
@@ -168,6 +168,10 @@ const playPrevious = () => {
   store.setSelectedSong(previousSong);
   play(previousSong);
   store.setIsPlaying(true);
+};
+
+const openSettings = () => {
+  store.setIsSettingsOpen(true);
 };
 </script>
 

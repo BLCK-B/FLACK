@@ -7,6 +7,8 @@ export const useStore = defineStore('store', {
         queue: [] as Song[],
         selectedSong: undefined as Song | undefined,
         isPlaying: false as boolean,
+        isSettingsOpen: false as boolean,
+        dirPaths: [] as string[],
     }),
     actions: {
         setSelectedSong(selectedSong: Song | undefined) {
@@ -25,6 +27,12 @@ export const useStore = defineStore('store', {
         shuffleQueue() {
             this.queue = createShuffledQueue(this.queue);
             localStorage.setItem("queue", JSON.stringify(this.queue));
+        },
+        setIsSettingsOpen(isSettingsOpen: boolean) {
+            this.isSettingsOpen = isSettingsOpen;
+        },
+        setDirPaths(dirPaths: string[]) {
+            this.dirPaths = dirPaths;
         },
     },
 })

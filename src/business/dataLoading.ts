@@ -3,14 +3,27 @@ import path from "path";
 import {Song} from "../types/musicTypes";
 import {parseFile, selectCover} from "music-metadata";
 
-const MUSIC_DIR = "C:\\DownloadedMusic";
+export async function getSongs(dirPaths: string[]): Promise<Song[]> {
+    if (!dirPaths.length) return [];
+    const allFiles: string[] = [];
 
-export async function getSongs(): Promise<Song[]> {
-    const files = fs.readdirSync(MUSIC_DIR);
+    const allowedExt = new Set(Object.keys(mimeTypes));
 
-    return await Promise.all(files.map(async (f) => {
-            const filepath = path.join(MUSIC_DIR, f);
+    for (const dir of dirPaths) {
+        try {
+            const entries = fs.readdirSync(dir);
+            for (const file of entries) {
+                const ext = path.extname(file).toLowerCase();
+                if (!allowedExt.has(ext)) continue;
+                allFiles.push(path.join(dir, file));
+            }
+        } catch (err) {
+            console.error(`Failed to read directory: ${dir}`, err);
+        }
+    }
 
+    return await Promise.all(
+        allFiles.map(async (filepath) => {
             try {
                 const metadata = await parseFile(filepath);
                 const common = metadata.common;
@@ -18,25 +31,31 @@ export async function getSongs(): Promise<Song[]> {
                 const stats = fs.statSync(filepath);
                 const date = common.date ? new Date(common.date) : stats.birthtime;
 
-                const artists = common.artists || (common.artist ? [common.artist] : []);
+                const artists =
+                    common.artists || (common.artist ? [common.artist] : []);
 
                 return {
                     filepath,
-                    name: common.title || f,
+                    name: common.title || path.basename(filepath),
                     date,
                     artists,
-                    thumbnailUrl: `http://localhost:50001/thumbnail?filepath=${encodeURIComponent(filepath.replace(/\\/g, "/"))}`,
-                    audioUrl: `http://localhost:50001/audio?filepath=${encodeURIComponent(filepath.replace(/\\/g, "/"))}`,
+                    thumbnailUrl: `http://localhost:50001/thumbnail?filepath=${encodeURIComponent(
+                        filepath.replace(/\\/g, "/")
+                    )}`,
+                    audioUrl: `http://localhost:50001/audio?filepath=${encodeURIComponent(
+                        filepath.replace(/\\/g, "/")
+                    )}`,
                 };
             } catch (err) {
-                console.error(`Error reading metadata for ${f}`, err);
+                console.error(`Error reading metadata for ${filepath}`, err);
+
                 return {
-                    filepath: '',
-                    name: f,
+                    filepath,
+                    name: path.basename(filepath),
                     date: new Date(),
                     artists: [],
-                    thumbnailUrl: '',
-                    audioUrl: '',
+                    thumbnailUrl: "",
+                    audioUrl: "",
                 };
             }
         })
@@ -72,9 +91,6 @@ const mimeTypes: Record<string, string> = {
     ".flac": "audio/flac",
     ".ogg": "audio/ogg",
     ".opus": "audio/opus",
-    ".m4a": "audio/mp4",
-    ".mp4": "audio/mp4",
-    ".weba": "audio/webm",
     ".webm": "audio/webm",
 };
 

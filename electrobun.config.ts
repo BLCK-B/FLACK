@@ -20,16 +20,7 @@ export default {
 		},
 		// Ignore Vite output in watch mode — HMR handles view rebuilds separately
 		watchIgnore: ["dist/**"],
-		mac: {
-			bundleCEF: false,
-			defaultRenderer: "native",
-			codesign: false,
-			notarize: false,
-		},
-		linux: {
-			bundleCEF: false,
-			defaultRenderer: "native",
-		},
+		// todo: icon still broken, then also update in index.html
 		win: {
 			icon: "assets/MRTicon.ico",
 			bundleCEF: false,

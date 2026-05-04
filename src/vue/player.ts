@@ -30,11 +30,6 @@ export function unpause() {
     audio.play().catch(e => console.warn("Playback blocked:", e));
 }
 
-export function stop() {
-    audio.pause();
-    audio.currentTime = 0;
-}
-
 export function setVolume(value: number) {
     const v = Math.max(0, Math.min(1, value));
     audio.volume = v;

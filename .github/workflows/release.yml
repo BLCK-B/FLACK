@@ -3,10 +3,6 @@ name: Build and Release
 on:
   workflow_dispatch:
     inputs:
-      platforms:
-        description: "PLatforms to compile for."
-        required: true
-        default: "[\"ubuntu-latest\",\"windows-latest\",\"macos-latest\"]"
       make-draft:
         description: "Make draft release?"
         required: true
@@ -18,37 +14,25 @@ permissions:
 
 jobs:
   build:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: true
-      matrix:
-        os: ${{fromJson(inputs.platforms)}}
-
+    runs-on: windows-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v5
-
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
-
       - name: Install dependencies
         run: bun install
-
       - name: Build
         run: bun run build
-
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: build-${{ matrix.os }}
+          name: build-windows
           path: |
-            artifacts/*.dmg
-            artifacts/*.zip
             artifacts/*.exe
-            artifacts/*.AppImage
-            artifacts/*.snap
+            artifacts/*.zip
           if-no-files-found: warn
 
   release:
@@ -62,10 +46,8 @@ jobs:
         with:
           path: artifacts
           merge-multiple: true
-
       - name: List artifacts
         run: ls -la artifacts/ || echo "No artifacts directory"
-
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:

@@ -1,4 +1,4 @@
-import {BrowserView, BrowserWindow, RPCSchema, Updater} from "electrobun/bun";
+import {BrowserView, BrowserWindow, RPCSchema, Updater, Utils} from "electrobun/bun";
 import {getAudioStream, getSongs, getThumbnailStream} from "../business/dataLoading";
 import {Song} from "../types/musicTypes";
 import { serve } from "bun";
@@ -7,8 +7,14 @@ export type RPC = {
     bun: RPCSchema<{
         requests: {
             GETsongs: {
-                params: {};
+                params: {
+                    dirPaths: string[];
+                };
                 response: Song[];
+            };
+            openDirectoryDialog: {
+                params: {};
+                response: string[];
             };
         };
         messages: {};
@@ -23,8 +29,18 @@ const musicRPC = BrowserView.defineRPC<RPC>({
     maxRequestTime: 10000,
     handlers: {
         requests: {
-            GETsongs: () => getSongs(),
-        }
+            GETsongs: ({ dirPaths }) => getSongs(dirPaths),
+            openDirectoryDialog: async () => {
+                const paths = await Utils.openFileDialog({
+                    startingFolder: Utils.paths.home,
+                    allowedFileTypes: "*",
+                    canChooseFiles: false,
+                    canChooseDirectory: true,
+                    allowsMultipleSelection: true,
+                });
+                return paths ?? [];
+            }
+        },
     }
 })
 
