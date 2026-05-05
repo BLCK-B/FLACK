@@ -106,7 +106,7 @@ const selectSong = (song: Song) => {
 
 .songinfo p {
   margin: 0.25rem 0;
-  /* white-space: nowrap; */
+  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
