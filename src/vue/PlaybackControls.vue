@@ -6,30 +6,32 @@
       </div>
     </div>
     <div class="control-row">
-      <div v-if="store.selectedSong" class="song-info">
-        <img :src="store.selectedSong.thumbnailUrl" alt="cover" class="thumbnail"/>
+      <div class="song-info">
+        <img :src="store.selectedSong?.thumbnailUrl || 'icons/transparent.png'" alt="cover" class="thumbnail"/>
         <div class="song-info-text">
-          <p> {{ store.selectedSong.name }} </p>
-          <p class="smaller"> {{ store.selectedSong.artists.join(", ") }} </p>
+          <p> {{ store.selectedSong?.name || '' }} </p>
+          <p class="smaller"> {{
+              store.selectedSong?.artists.join(", ") || 'No songs: select directory with audio files in settings'
+            }} </p>
         </div>
       </div>
       <div class="middle-controls">
         <div/>
         <button>
-          <SkipBackIcon class="icon" @click="playPrevious" />
+          <SkipBackIcon class="icon" @click="playPrevious"/>
         </button>
         <button v-if="!store.isPlaying" @click="playEvent">
-          <PlayIcon class="icon" />
+          <PlayIcon class="icon"/>
         </button>
         <button v-else @click="playEvent">
-          <PauseIcon class="icon" />
+          <PauseIcon class="icon"/>
         </button>
         <button>
-          <SkipNextIcon class="icon" @click="playNext" />
+          <SkipNextIcon class="icon" @click="playNext"/>
         </button>
         <div/>
         <button>
-          <ShuffleIcon class="icon bigger" @click="playNewQueue()" />
+          <ShuffleIcon class="icon bigger" @click="playNewQueue()"/>
         </button>
       </div>
       <div class="right-controls">
@@ -51,7 +53,7 @@
             @wheel.prevent="onWheelChange"
         />
         <button>
-          <SettingsIcon class="icon" style="margin-left: 15px" @click="openSettings"/>
+          <SettingsIcon class="icon settings-btn" @click="openSettings"/>
         </button>
       </div>
     </div>
@@ -183,6 +185,7 @@ p {
 .container {
   background-color: #1D1D1D;
   display: flex;
+  height: 100%;
 }
 
 .playbar {
@@ -226,10 +229,6 @@ p {
   align-items: center;
   gap: 0.5rem;
   margin-bottom: 4px;
-}
-
-.right-controls input {
-  width: 150px;
 }
 
 .progress-bg {
@@ -310,5 +309,36 @@ button {
 
 .time {
   margin-right: 30px;
+}
+
+.settings-btn {
+  margin-left: 15px;
+}
+
+@media (max-width: 900px) {
+  .right-controls input[type="range"] {
+    width: 80px;
+  }
+  .settings-btn {
+    margin-left: 0;
+  }
+}
+
+@media (max-width: 800px) {
+  .time {
+    display: none;
+  }
+}
+
+@media (max-width: 600px) {
+  .thumbnail {
+    display: none;
+  }
+}
+
+@media (max-width: 500px) {
+  .middle-controls {
+    gap: 0;
+  }
 }
 </style>

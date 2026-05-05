@@ -6,7 +6,7 @@
 
         <div class="controls">
           <button type="button" @click="pickDirectory">
-            Select folder
+            Add directory
           </button>
         </div>
 

@@ -1,6 +1,6 @@
 <template>
   <div class="grid">
-    <div v-for="song in store.queue" :key="song.name + song.artists" class="card" :class="{ selected: firstSelect === song, playing: currentSong === song }" @click="selectSong(song)">
+    <div v-for="song in store.queue" :key="String(song.name + song.artists)" class="card" :class="{ selected: firstSelect === song, playing: currentSong === song }" @click="selectSong(song)">
       <img :src="song.thumbnailUrl" alt="cover" class="thumbnail" loading="lazy" decoding="async"/>
       <div class="songinfo">
         <p> {{ song.name }} </p>
@@ -144,5 +144,12 @@ const selectSong = (song: Song) => {
 
 .playing {
   background-color: rgba(255, 255, 255, 0.25);
+}
+
+.empty-note {
+  position: absolute;
+  width: 30rem;
+  top: 2rem;
+  left: 2rem;
 }
 </style>
