@@ -1,4 +1,4 @@
-import {BrowserView, BrowserWindow, RPCSchema, Updater, Utils} from "electrobun/bun";
+import {BrowserView, BrowserWindow, RPCSchema, Updater, Utils, Screen} from "electrobun/bun";
 import {getAudioStream, getSongs, getThumbnailStream} from "../business/dataLoading";
 import {Song} from "../types/musicTypes";
 import { serve } from "bun";
@@ -85,14 +85,21 @@ async function getBusinessUrl(): Promise<string> {
 // Create the main application window
 const url = await getBusinessUrl();
 
+const { width, height } = Screen.getPrimaryDisplay().workArea;
+
 const mainWindow = new BrowserWindow({
     title: "FLACK",
     url,
     rpc: musicRPC,
     frame: {
-        width: 900,
-        height: 700,
-        x: 200,
-        y: 200,
+        width,
+        height,
+        x: 0,
+        y: 0,
     },
+    titleBarStyle: "default",
 });
+
+setTimeout(() => {
+    mainWindow.maximize();
+}, 0);
