@@ -63,6 +63,11 @@ audio.onended = () => {
     onEndedCallback?.();
 };
 
+audio.onerror = () => {
+    console.warn("Song failed to load:", audio.src);
+    onEndedCallback?.();
+};
+
 audio.ontimeupdate = () => {
     currentTime.value = audio.currentTime || 0;
     if (isPlaying.value) {
