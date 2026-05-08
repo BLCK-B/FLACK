@@ -18,7 +18,7 @@ Local audio player for Windows. Press play, enjoy endless music.
 
 ##
 
-FLACK is a minimal Windows audio player for local files. It supports many audio formats and lossless playback. It's only purpose is distraction-free playback.
+FLACK is a minimal Windows audio player for local files. It supports many audio formats and lossless playback. Its only purpose is distraction-free playback.
 
 - Choose directories with your audio files in settings
 - Press shuffle and play
