@@ -2,6 +2,7 @@ import {BrowserView, BrowserWindow, RPCSchema, Updater, Utils, Screen} from "ele
 import {getAudioStream, getSongs, getThumbnailStream} from "../business/dataLoading";
 import {Song} from "../types/musicTypes";
 import { serve } from "bun";
+import config from "../../electrobun.config";
 
 export type RPC = {
     bun: RPCSchema<{
@@ -87,8 +88,16 @@ const url = await getBusinessUrl();
 
 const { width, height } = Screen.getPrimaryDisplay().workArea;
 
+const simplifyVersion = (version: string) => {
+    const parts = version.split(".").map(Number);
+    while (parts.length > 1 && parts[parts.length - 1] === 0) {
+        parts.pop();
+    }
+    return parts.join(".");
+}
+
 const mainWindow = new BrowserWindow({
-    title: "FLACK",
+    title: `FLACK v${simplifyVersion(config.app.version)}`,
     url,
     rpc: musicRPC,
     frame: {
