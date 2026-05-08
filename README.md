@@ -23,6 +23,8 @@ FLACK is a minimal Windows audio player for local files. It supports many audio 
 - Choose directories with your audio files in settings
 - Press shuffle and play
 
+The app is based on Bun runtime and uses system WebView.
+
 ##
 
 **Installation**
