@@ -1,7 +1,7 @@
 <h2 align="center">FLACK</h2>
 
 <p align="center">
-Local audio player for Windows. Press play and forget.
+Local audio player for Windows. Press play, enjoy endless music.
 </p>
 
 <p align="center">
@@ -22,7 +22,6 @@ FLACK is a minimal Windows audio player for local files. It supports many audio 
 
 - Choose directories with your audio files in settings
 - Press shuffle and play
-- Minimize the player, enjoy endless music
 
 ##
 
