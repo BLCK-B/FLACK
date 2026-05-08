@@ -20,7 +20,7 @@ Local audio player for Windows. Press play, enjoy endless music.
 
 FLACK is a minimal Windows audio player for local files. It supports many audio formats and lossless playback. Its only purpose is distraction-free playback.
 
-- Choose directories with your audio files in settings
+- In settings, choose directories with your audio files
 - Press shuffle and play
 
 The app is based on Bun runtime and uses system WebView.
@@ -30,8 +30,8 @@ The app is based on Bun runtime and uses system WebView.
 **Installation**
 
 - [Download](https://github.com/BLCK-B/FLACK/releases) the installer zip and extract the executable.
-- Open the installer. It opens a terminal window, not the usual Windows installer UI.
-- Wait for "installation finished". It if doesn't close, do it manually.
+- Run the installer. It opens a terminal window, not the usual Windows installer UI.
+- Wait for "installation finished". If it doesn't close, do it manually.
 
 To uninstall the app, remove the folder `blck.flack` in `AppData/Local`
 
