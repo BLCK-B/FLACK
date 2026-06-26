@@ -3,6 +3,7 @@ import {getAudioStream, getSongs, getThumbnailStream} from "../business/dataLoad
 import {Song} from "../types/musicTypes";
 import { serve } from "bun";
 import config from "../../electrobun.config";
+import { setWindowIcon } from "./windowIcon";
 
 export type RPC = {
     bun: RPCSchema<{
@@ -96,8 +97,10 @@ const simplifyVersion = (version: string) => {
     return parts.join(".");
 }
 
+const windowTitle = `FLACK v${simplifyVersion(config.app.version)}`;
+
 const mainWindow = new BrowserWindow({
-    title: `FLACK v${simplifyVersion(config.app.version)}`,
+    title: windowTitle,
     url,
     rpc: musicRPC,
     frame: {
@@ -112,3 +115,6 @@ const mainWindow = new BrowserWindow({
 setTimeout(() => {
     mainWindow.maximize();
 }, 0);
+
+// Set the native window/taskbar icon on Windows (Electrobun has no icon API).
+void setWindowIcon(windowTitle, config.build?.win?.icon);

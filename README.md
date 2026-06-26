@@ -39,7 +39,6 @@ To uninstall the app, remove the folder `blck.flack` in `AppData/Local`
 
 **TODO**
 
-- Create and fix application icon: currently no icon
 - Context tray / notification control of playback
 - Play a song by double clicking the file
 - One time and infinite song repeat

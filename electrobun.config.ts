@@ -20,9 +20,10 @@ export default {
 		},
 		// Ignore Vite output in watch mode — HMR handles view rebuilds separately
 		watchIgnore: ["dist/**"],
-		// todo: icon still broken, then also update in index.html
 		win: {
-			icon: "assets/MRTicon.ico",
+			// Must be a real .ico: rcedit embeds it into the exe, the CLI copies it
+			// verbatim to Resources/app.ico, and our windowIcon FFI loads it directly.
+			icon: "assets/FLACKlogo.ico",
 			bundleCEF: false,
 			defaultRenderer: "native",
 		},
