@@ -1,0 +1,102 @@
+diff --git a/node_modules/electrobun/bin/electrobun.cjs b/node_modules/electrobun/bin/electrobun.cjs
+index 09e3088..dbefc53 100644
+--- a/node_modules/electrobun/bin/electrobun.cjs
++++ b/node_modules/electrobun/bin/electrobun.cjs
+@@ -1,8 +1,9 @@
+ #!/usr/bin/env node
+ 
+ const { execSync, spawn } = require('child_process');
+-const { existsSync, mkdirSync, unlinkSync, chmodSync, copyFileSync, createWriteStream } = require('fs');
++const { existsSync, mkdirSync, unlinkSync, chmodSync, copyFileSync, createWriteStream, mkdtempSync, readdirSync, rmSync } = require('fs');
+ const { join, dirname } = require('path');
++const os = require('os');
+ const https = require('https');
+ const ProxyAgent = require('proxy-agent').ProxyAgent;
+ 
+@@ -37,6 +38,63 @@ const electrobunDir = join(__dirname, '..');
+ const cacheDir = join(electrobunDir, '.cache');
+ const cliBinary = join(cacheDir, `electrobun${binExt}`);
+ 
++// --- Begin patch: make the bundled rcedit helper resolvable on any system ---
++// The published Windows CLI (electrobun.exe) is a bun-compiled binary with the
++// rcedit npm module's directory baked to the build machine, so at runtime it
++// spawns D:\a\electrobun\electrobun\package\node_modules\rcedit\bin\rcedit-x64.exe.
++// That path does not exist on end-user machines, so icon embedding fails.
++// We materialize the locally-installed rcedit helper exes at that baked path
++// (creating the drive with `subst` if it is missing) before launching the CLI,
++// then tear it down once the CLI exits. Entirely best-effort: icon embedding is
++// non-fatal, so any failure here must never block the build.
++const RCEDIT_BAKED_BIN_DIR = 'D:\\a\\electrobun\\electrobun\\package\\node_modules\\rcedit\\bin';
++
++function findLocalRceditBinDir() {
++  // rcedit is a dependency of electrobun; with hoisting it usually lands in a
++  // node_modules above the package. Walk up looking for it, then check a sibling.
++  let dir = electrobunDir;
++  while (dir !== dirname(dir)) {
++    const candidate = join(dir, 'node_modules', 'rcedit', 'bin');
++    if (existsSync(join(candidate, 'rcedit-x64.exe'))) return candidate;
++    dir = dirname(dir);
++  }
++  const sibling = join(electrobunDir, '..', 'rcedit', 'bin');
++  if (existsSync(join(sibling, 'rcedit-x64.exe'))) return sibling;
++  return null;
++}
++
++function ensureBakedRcedit() {
++  let cleanup = () => {};
++  if (platform !== 'win') return cleanup;
++  try {
++    if (existsSync(join(RCEDIT_BAKED_BIN_DIR, 'rcedit-x64.exe'))) return cleanup; // already present
++    const localBin = findLocalRceditBinDir();
++    if (!localBin) return cleanup; // nothing to copy; let the CLI's own warning surface
++
++    const driveLetter = RCEDIT_BAKED_BIN_DIR.slice(0, 2); // e.g. "D:"
++    const driveRoot = driveLetter + '\\';                 // e.g. "D:\"
++    if (!existsSync(driveRoot)) {
++      // Map the missing drive to a temp directory so the absolute path resolves.
++      const backing = mkdtempSync(join(os.tmpdir(), 'electrobun-rcedit-'));
++      execSync(`subst ${driveLetter} "${backing}"`, { stdio: 'pipe' });
++      cleanup = () => {
++        try { execSync(`subst ${driveLetter} /D`, { stdio: 'pipe' }); } catch (_) {}
++        try { rmSync(backing, { recursive: true, force: true }); } catch (_) {}
++      };
++    }
++
++    mkdirSync(RCEDIT_BAKED_BIN_DIR, { recursive: true });
++    for (const f of readdirSync(localBin)) {
++      copyFileSync(join(localBin, f), join(RCEDIT_BAKED_BIN_DIR, f));
++    }
++  } catch (_) {
++    try { cleanup(); } catch (_) {}
++    cleanup = () => {};
++  }
++  return cleanup;
++}
++// --- End patch ---
++
+ async function downloadFile(url, filePath) {
+   return new Promise((resolve, reject) => {
+     mkdirSync(dirname(filePath), { recursive: true });
+@@ -135,6 +193,9 @@ async function main() {
+     const args = process.argv.slice(2);
+     const cliPath = await ensureCliBinary();
+ 
++    // Ensure the bundled rcedit helper resolves before the CLI runs (Windows).
++    const rceditCleanup = ensureBakedRcedit();
++
+     // Replace this process with the actual CLI
+     const child = spawn(cliPath, args, {
+       stdio: 'inherit',
+@@ -142,10 +203,12 @@ async function main() {
+     });
+ 
+     child.on('exit', (code) => {
++      rceditCleanup();
+       process.exit(code || 0);
+     });
+ 
+     child.on('error', (error) => {
++      rceditCleanup();
+       console.error('Failed to start electrobun CLI:', error.message);
+       process.exit(1);
+     });

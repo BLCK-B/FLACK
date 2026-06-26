@@ -9,7 +9,8 @@
 		"dev:nohmr": "electrobun dev --watch",
 		"prodrun": "vite build && electrobun dev",
 		"build:debug": "vite build && electrobun build --env=debug",
-		"build": "vite build && electrobun build --env=stable"
+		"build": "vite build && electrobun build --env=stable",
+		"postinstall": "patch-package"
 	},
 	"dependencies": {
 		"electrobun": "1.16.0",
@@ -20,6 +21,7 @@
 		"@types/bun": "latest",
 		"@vitejs/plugin-vue": "^6.0.6",
 		"concurrently": "^9.1.0",
+		"patch-package": "^8.0.1",
 		"typescript": "^5.7.2",
 		"vite": "^8.0.8",
 		"vite-svg-loader": "^5.1.1",
