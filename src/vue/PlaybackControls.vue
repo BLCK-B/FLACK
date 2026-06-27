@@ -62,6 +62,7 @@
 
 <script setup lang="ts">
 import {useStore} from "./store";
+import {MediaAction, onMediaControl, sendPlaybackState} from "./rpc";
 import {
   pause,
   unpause,
@@ -83,7 +84,7 @@ import ShuffleIcon from "@/icons/shuffleIcon.svg";
 import SpeakerVolume from "@/icons/speakerVolume.svg";
 import SpeakerSilent from "@/icons/speakerSilent.svg";
 import SettingsIcon from "@/icons/settingsIcon.svg";
-import {computed, onMounted} from "vue";
+import {computed, onMounted, watch} from "vue";
 
 const store = useStore();
 
@@ -91,6 +92,32 @@ onMounted(() => {
   onEnded(() => {
     playNext();
   });
+
+  onMediaControl((action: MediaAction) => {
+    switch (action) {
+      case "playpause":
+        playEvent();
+        break;
+      case "next":
+        playNext();
+        break;
+      case "prev":
+        playPrevious();
+        break;
+    }
+  });
+
+  watch(
+      () => [store.selectedSong, store.isPlaying] as const,
+      () => {
+        sendPlaybackState({
+          songName: store.selectedSong?.name ?? null,
+          artists: store.selectedSong?.artists.join(", ") ?? null,
+          isPlaying: store.isPlaying,
+        });
+      },
+      {immediate: true},
+  );
 });
 
 const formatTime = (seconds: number) => {

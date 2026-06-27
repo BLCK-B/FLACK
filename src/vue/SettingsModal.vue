@@ -25,21 +25,10 @@
 
 <script setup lang="ts">
 import {onMounted} from "vue";
-import Electrobun, {Electroview} from "electrobun/view";
-import {RPC} from "../bun";
 import {useStore} from "./store";
+import {electrobun} from "./rpc";
 
 const store = useStore();
-
-const rpc = Electroview.defineRPC<RPC>({
-  maxRequestTime: 10000,
-  handlers: {
-    requests: {},
-    messages: {},
-  },
-});
-
-const electrobun = new Electrobun.Electroview({rpc});
 
 const close = () => {
   store.setIsSettingsOpen(false);

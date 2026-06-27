@@ -11,23 +11,12 @@
 </template>
 
 <script setup lang="ts">
-import Electrobun, {Electroview} from "electrobun/view";
-import {RPC} from "../bun";
 import {onMounted, ref, watch} from "vue";
 import {Song} from "../types/musicTypes";
 import {useStore} from "./store";
+import {electrobun} from "./rpc";
 import {play, currentSong, restoreCurrentTime} from "./player";
 import {areQueuesEqual, getSongKey} from "./songUtils";
-
-const rpc = Electroview.defineRPC<RPC>({
-  maxRequestTime: 10000,
-  handlers: {
-    requests: {},
-    messages: {},
-  },
-});
-
-const electrobun = new Electrobun.Electroview({rpc});
 
 const store = useStore();
 

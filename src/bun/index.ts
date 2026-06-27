@@ -4,6 +4,7 @@ import {Song} from "../types/musicTypes";
 import { serve } from "bun";
 import config from "../../electrobun.config";
 import { setWindowIcon } from "./windowIcon";
+import { initMediaTray, setPlaybackState, type MediaAction, type PlaybackState } from "./mediaTray";
 
 export type RPC = {
     bun: RPCSchema<{
@@ -19,11 +20,17 @@ export type RPC = {
                 response: string[];
             };
         };
-        messages: {};
+        messages: {
+            playbackState: PlaybackState;
+        };
     }>;
     webview: RPCSchema<{
         requests: {};
-        messages: {};
+        messages: {
+            mediaControl: {
+                action: MediaAction
+            };
+        };
     }>;
 };
 
@@ -42,6 +49,9 @@ const musicRPC = BrowserView.defineRPC<RPC>({
                 });
                 return paths ?? [];
             }
+        },
+        messages: {
+            playbackState: (state) => setPlaybackState(state),
         },
     }
 })
@@ -118,3 +128,10 @@ setTimeout(() => {
 
 // Set the native window/taskbar icon on Windows (Electrobun has no icon API).
 void setWindowIcon(windowTitle, config.build?.win?.icon);
+
+initMediaTray({
+    icon: config.build?.win?.icon,
+    onControl: (action: MediaAction) => {
+        musicRPC.send.mediaControl({ action });
+    },
+});

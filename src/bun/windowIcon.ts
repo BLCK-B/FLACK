@@ -24,7 +24,7 @@ function toIco(p: string): string {
 	return p.replace(/\.[^./\\]+$/, ".ico");
 }
 
-function resolveIconPath(configuredIcon?: string): string | null {
+export function resolveIconPath(configuredIcon?: string): string | null {
 	const candidates: string[] = [];
 	if (configuredIcon) {
 		candidates.push(
