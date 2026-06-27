@@ -14,8 +14,8 @@
 import {onMounted, ref, watch} from "vue";
 import {Song} from "../types/musicTypes";
 import {useStore} from "./store";
-import {electrobun} from "./rpc";
-import {play, currentSong, restoreCurrentTime} from "./player";
+import {electrobun, getLaunchSong, onOpenFile} from "./rpc";
+import {play, cue, currentSong, restoreCurrentTime} from "./player";
 import {areQueuesEqual, getSongKey} from "./songUtils";
 
 const store = useStore();
@@ -41,8 +41,7 @@ const loadQueue = async () => {
       const rawSelected = localStorage.getItem("selected-song");
       const selectedSong = rawSelected ? JSON.parse(rawSelected) : null;
       if (selectedSong) {
-        selectSong(selectedSong);
-        selectSong(selectedSong);
+        cueSong(selectedSong);
         restoreCurrentTime();
       }
     }
@@ -51,8 +50,7 @@ const loadQueue = async () => {
   }
 
   if (!store.selectedSong) {
-    selectSong(store.queue[0]);
-    selectSong(store.queue[0]);
+    cueSong(store.queue[0]);
   }
   store.setIsPlaying(false);
 };
@@ -66,9 +64,33 @@ watch(
     }
 );
 
+const playOpenedSong = (song: Song) => {
+  const key = getSongKey(song);
+  const queue = store.queue.filter(s => getSongKey(s) !== key);
+  queue.unshift(song);
+  store.setQueue(queue);
+  store.setSelectedSong(song);
+  firstSelect.value = song;
+  play(song);
+  store.setIsPlaying(true);
+};
+
 onMounted(async () => {
+  onOpenFile(playOpenedSong);
   await loadQueue();
+
+  const launchSong = await getLaunchSong();
+  if (launchSong) {
+    playOpenedSong(launchSong);
+  }
 })
+
+const cueSong = (song: Song) => {
+  if (!song) return;
+  firstSelect.value = song;
+  store.setSelectedSong(song);
+  cue(song);
+};
 
 const selectSong = (song: Song) => {
   if (!firstSelect.value) {

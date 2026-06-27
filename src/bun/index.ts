@@ -1,10 +1,11 @@
 import {BrowserView, BrowserWindow, RPCSchema, Updater, Utils, Screen} from "electrobun/bun";
-import {getAudioStream, getSongs, getThumbnailStream} from "../business/dataLoading";
+import {getAudioStream, getSong, getSongs, getThumbnailStream} from "../business/dataLoading";
 import {Song} from "../types/musicTypes";
-import { serve } from "bun";
+import {serve} from "bun";
 import config from "../../electrobun.config";
-import { setWindowIcon } from "./windowIcon";
-import { initMediaTray, setPlaybackState, type MediaAction, type PlaybackState } from "./mediaTray";
+import {setWindowIcon} from "./windowIcon";
+import {findLaunchFile} from "./launchFile";
+import {initMediaTray, setPlaybackState, type MediaAction, type PlaybackState} from "./mediaTray";
 
 export type RPC = {
     bun: RPCSchema<{
@@ -19,6 +20,10 @@ export type RPC = {
                 params: {};
                 response: string[];
             };
+            getLaunchSong: {
+                params: {};
+                response: Song | null;
+            };
         };
         messages: {
             playbackState: PlaybackState;
@@ -30,9 +35,16 @@ export type RPC = {
             mediaControl: {
                 action: MediaAction
             };
+            openFile: {
+                song: Song;
+            };
         };
     }>;
 };
+
+const launchFilePath = findLaunchFile();
+let launchSongConsumed = false;
+let mainWindow: BrowserWindow | undefined;
 
 const musicRPC = BrowserView.defineRPC<RPC>({
     maxRequestTime: 10000,
@@ -48,7 +60,12 @@ const musicRPC = BrowserView.defineRPC<RPC>({
                     allowsMultipleSelection: true,
                 });
                 return paths ?? [];
-            }
+            },
+            getLaunchSong: async () => {
+                if (!launchFilePath || launchSongConsumed) return null;
+                launchSongConsumed = true;
+                return await getSong(launchFilePath);
+            },
         },
         messages: {
             playbackState: (state) => setPlaybackState(state),
@@ -56,21 +73,52 @@ const musicRPC = BrowserView.defineRPC<RPC>({
     }
 })
 
-serve({
-    port: 50001,
-    fetch(req) {
-        const url = new URL(req.url);
-        if (url.pathname === "/thumbnail") {
-            const filepath = url.searchParams.get("filepath");
-            return getThumbnailStream(filepath || "");
+async function openFileInRunningApp(filepath: string): Promise<void> {
+    try {
+        const song = await getSong(filepath);
+        musicRPC.send.openFile({song});
+        mainWindow?.unminimize();
+        mainWindow?.focus();
+    } catch (err) {
+        console.warn(`Failed to open file, ${err}`);
+    }
+}
+
+function handleRequest(req: Request): Response | Promise<Response> {
+    const url = new URL(req.url);
+    if (url.pathname === "/thumbnail") {
+        const filepath = url.searchParams.get("filepath");
+        return getThumbnailStream(filepath || "");
+    }
+    if (url.pathname === "/audio") {
+        const filepath = url.searchParams.get("filepath");
+        return getAudioStream(filepath || "", req);
+    }
+    if (url.pathname === "/open") {
+        const filepath = url.searchParams.get("filepath");
+        if (filepath) void openFileInRunningApp(filepath);
+        return new Response("ok");
+    }
+    return new Response("Not found", {status: 404});
+}
+
+let isPrimaryInstance = true;
+try {
+    serve({
+        port: 50001,
+        fetch: handleRequest
+    });
+} catch {
+    isPrimaryInstance = false;
+    if (launchFilePath) {
+        try {
+            await fetch(`http://localhost:50001/open?filepath=${encodeURIComponent(launchFilePath)}`);
+        } catch (err) {
+            console.warn(`Could not hand file to running FLACK (${err})`);
         }
-        if (url.pathname === "/audio") {
-            const filepath = url.searchParams.get("filepath");
-            return getAudioStream(filepath || "", req);
-        }
-        return new Response("Not found", { status: 404 });
-    },
-});
+    }
+    Utils.quit();
+}
 
 // -----------------------------------------------------------
 
@@ -94,11 +142,6 @@ async function getBusinessUrl(): Promise<string> {
     return "views://vue/index.html";
 }
 
-// Create the main application window
-const url = await getBusinessUrl();
-
-const { width, height } = Screen.getPrimaryDisplay().workArea;
-
 const simplifyVersion = (version: string) => {
     const parts = version.split(".").map(Number);
     while (parts.length > 1 && parts[parts.length - 1] === 0) {
@@ -107,31 +150,37 @@ const simplifyVersion = (version: string) => {
     return parts.join(".");
 }
 
-const windowTitle = `FLACK v${simplifyVersion(config.app.version)}`;
+if (isPrimaryInstance) {
+    const url = await getBusinessUrl();
 
-const mainWindow = new BrowserWindow({
-    title: windowTitle,
-    url,
-    rpc: musicRPC,
-    frame: {
-        width,
-        height,
-        x: 0,
-        y: 0,
-    },
-    titleBarStyle: "default",
-});
+    const {width, height} = Screen.getPrimaryDisplay().workArea;
 
-setTimeout(() => {
-    mainWindow.maximize();
-}, 0);
+    const windowTitle = `FLACK v${simplifyVersion(config.app.version)}`;
 
-// Set the native window/taskbar icon on Windows (Electrobun has no icon API).
-void setWindowIcon(windowTitle, config.build?.win?.icon);
+    mainWindow = new BrowserWindow({
+        title: windowTitle,
+        url,
+        rpc: musicRPC,
+        frame: {
+            width,
+            height,
+            x: 0,
+            y: 0,
+        },
+        titleBarStyle: "default",
+    });
 
-initMediaTray({
-    icon: config.build?.win?.icon,
-    onControl: (action: MediaAction) => {
-        musicRPC.send.mediaControl({ action });
-    },
-});
+    setTimeout(() => {
+        mainWindow?.maximize();
+    }, 0);
+
+    // Set the native window/taskbar icon on Windows (Electrobun has no icon API).
+    void setWindowIcon(windowTitle, config.build?.win?.icon);
+
+    initMediaTray({
+        icon: config.build?.win?.icon,
+        onControl: (action: MediaAction) => {
+            musicRPC.send.mediaControl({action});
+        },
+    });
+}

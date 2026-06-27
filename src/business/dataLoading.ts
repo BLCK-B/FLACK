@@ -3,18 +3,53 @@ import path from "path";
 import {Song} from "../types/musicTypes";
 import {parseFile, selectCover} from "music-metadata";
 
+export async function getSong(filepath: string): Promise<Song> {
+    try {
+        const metadata = await parseFile(filepath);
+        const common = metadata.common;
+
+        const stats = fs.statSync(filepath);
+        const date = common.date ? new Date(common.date) : stats.birthtime;
+
+        const artists =
+            common.artists || (common.artist ? [common.artist] : []);
+
+        return {
+            filepath,
+            name: common.title || path.basename(filepath),
+            date,
+            artists,
+            thumbnailUrl: `http://localhost:50001/thumbnail?filepath=${encodeURIComponent(
+                filepath.replace(/\\/g, "/")
+            )}`,
+            audioUrl: `http://localhost:50001/audio?filepath=${encodeURIComponent(
+                filepath.replace(/\\/g, "/")
+            )}`,
+        };
+    } catch (err) {
+        console.error(`Error reading metadata for ${filepath}`, err);
+
+        return {
+            filepath,
+            name: path.basename(filepath),
+            date: new Date(),
+            artists: [],
+            thumbnailUrl: "",
+            audioUrl: "",
+        };
+    }
+}
+
 export async function getSongs(dirPaths: string[]): Promise<Song[]> {
     if (!dirPaths.length) return [];
     const allFiles: string[] = [];
-
-    const allowedExt = new Set(Object.keys(mimeTypes));
 
     for (const dir of dirPaths) {
         try {
             const entries = fs.readdirSync(dir);
             for (const file of entries) {
                 const ext = path.extname(file).toLowerCase();
-                if (!allowedExt.has(ext)) continue;
+                if (!audioExtensions.has(ext)) continue;
                 allFiles.push(path.join(dir, file));
             }
         } catch (err) {
@@ -22,44 +57,7 @@ export async function getSongs(dirPaths: string[]): Promise<Song[]> {
         }
     }
 
-    return await Promise.all(
-        allFiles.map(async (filepath) => {
-            try {
-                const metadata = await parseFile(filepath);
-                const common = metadata.common;
-
-                const stats = fs.statSync(filepath);
-                const date = common.date ? new Date(common.date) : stats.birthtime;
-
-                const artists =
-                    common.artists || (common.artist ? [common.artist] : []);
-
-                return {
-                    filepath,
-                    name: common.title || path.basename(filepath),
-                    date,
-                    artists,
-                    thumbnailUrl: `http://localhost:50001/thumbnail?filepath=${encodeURIComponent(
-                        filepath.replace(/\\/g, "/")
-                    )}`,
-                    audioUrl: `http://localhost:50001/audio?filepath=${encodeURIComponent(
-                        filepath.replace(/\\/g, "/")
-                    )}`,
-                };
-            } catch (err) {
-                console.error(`Error reading metadata for ${filepath}`, err);
-
-                return {
-                    filepath,
-                    name: path.basename(filepath),
-                    date: new Date(),
-                    artists: [],
-                    thumbnailUrl: "",
-                    audioUrl: "",
-                };
-            }
-        })
-    );
+    return await Promise.all(allFiles.map(getSong));
 }
 
 export const getThumbnailStream = async (filepath: string): Promise<Response> => {
@@ -93,6 +91,8 @@ const mimeTypes: Record<string, string> = {
     ".opus": "audio/opus",
     ".webm": "audio/webm",
 };
+
+export const audioExtensions = new Set(Object.keys(mimeTypes));
 
 const getMimeType = (filepath: string): string => {
     const extension = path.extname(filepath).toLowerCase();

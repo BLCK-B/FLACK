@@ -16,10 +16,17 @@ export const currentTime = ref(0);
 export function play(song: typeof currentSong.value) {
     if (!song) return;
 
+    cue(song);
+    audio.play().catch(e => console.warn("Playback blocked:", e));
+}
+
+// Load a song as the current track without starting playback
+export function cue(song: typeof currentSong.value) {
+    if (!song) return;
+
     currentSong.value = song;
     audio.src = song.audioUrl;
     audio.load();
-    audio.play().catch(e => console.warn("Playback blocked:", e));
 }
 
 export function pause() {
