@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-Local audio player for Windows.
+Local audio player for Windows with endless queue.
 </p>
 
 <p align="center">
