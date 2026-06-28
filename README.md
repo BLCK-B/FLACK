@@ -1,7 +1,9 @@
-<h2 align="center">FLACK</h2>
+<p align="center">
+<img width="120" height="120" alt="FLACKlogo" src="https://github.com/user-attachments/assets/c0b98c22-fab8-4cf5-b562-0d67db55cfb2" />
+</p>
 
 <p align="center">
-Local audio player for Windows. Press play, enjoy endless music.
+Local audio player for Windows.
 </p>
 
 <p align="center">
@@ -13,12 +15,12 @@ Local audio player for Windows. Press play, enjoy endless music.
 ##
 
 <p align="center">
-<img src="https://github.com/user-attachments/assets/843c660f-acef-4235-be3a-01712b352b70" width="450px"/>
+<img src="https://github.com/user-attachments/assets/0ee02b3e-75ef-4b96-a7cb-1dec00d56305" width="450px"/>
 </p>
 
 ##
 
-FLACK is a minimal Windows audio player for local files. It supports many audio formats and lossless playback. Its only purpose is distraction-free playback.
+FLACK is a minimal Windows audio player for local files. It supports most audio formats and lossless playback. Its only purpose is distraction-free playback.
 
 - In settings, choose directories with your audio files
 - Press shuffle and play
