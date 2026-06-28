@@ -34,9 +34,3 @@ The app is based on Bun runtime and uses system WebView.
 - Wait for "installation finished". If it doesn't close, do it manually.
 
 To uninstall the app, remove the folder `blck.flack` in `AppData/Local`
-
-##
-
-**TODO**
-
-- One time and infinite song repeat

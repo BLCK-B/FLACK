@@ -18,6 +18,9 @@
       <div class="middle-controls">
         <div/>
         <button>
+          <PlayRepeatIcon class="icon bigger2" :class="{ inactive: !isOnRepeat }" @click="toggleRepeat()"/>
+        </button>
+        <button>
           <SkipBackIcon class="icon" @click="playPrevious"/>
         </button>
         <button v-if="!store.isPlaying" @click="playEvent">
@@ -84,12 +87,20 @@ import ShuffleIcon from "@/icons/shuffleIcon.svg";
 import SpeakerVolume from "@/icons/speakerVolume.svg";
 import SpeakerSilent from "@/icons/speakerSilent.svg";
 import SettingsIcon from "@/icons/settingsIcon.svg";
-import {computed, onMounted, watch} from "vue";
+import PlayRepeatIcon from "@/icons/playRepeatIcon.svg";
+import {computed, onMounted, ref, watch} from "vue";
 
 const store = useStore();
 
+const isOnRepeat = ref(false);
+
 onMounted(() => {
   onEnded(() => {
+    if (isOnRepeat.value && currentSong.value) {
+      play(currentSong.value);
+      store.setIsPlaying(true);
+      return;
+    }
     playNext();
   });
 
@@ -199,6 +210,10 @@ const playPrevious = () => {
   store.setIsPlaying(true);
 };
 
+const toggleRepeat = () => {
+  isOnRepeat.value = !isOnRepeat.value;
+};
+
 const openSettings = () => {
   store.setIsSettingsOpen(true);
 };
@@ -294,9 +309,19 @@ button {
   cursor: pointer;
 }
 
+.inactive {
+  opacity: 0.5;
+}
+
 .bigger {
   transform: scale(1.4);
   transform-origin: center;
+}
+
+.bigger2 {
+  transform: scale(2.2);
+  transform-origin: center;
+  margin: 8px;
 }
 
 .right-controls input[type="range"] {
@@ -342,7 +367,7 @@ button {
   margin-left: 15px;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 950px) {
   .right-controls input[type="range"] {
     width: 80px;
   }
@@ -351,7 +376,7 @@ button {
   }
 }
 
-@media (max-width: 800px) {
+@media (max-width: 850px) {
   .time {
     display: none;
   }
