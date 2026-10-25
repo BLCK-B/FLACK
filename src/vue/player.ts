@@ -44,6 +44,21 @@ export function setVolume(value: number) {
     localStorage.setItem("player-volume", String(v));
 }
 
+export function increaseVolume() {
+    setVolume(Math.min(volume.value + 0.05, 1));
+}
+
+export function decreaseVolume() {
+    setVolume(Math.max(volume.value - 0.05, 0));
+}
+
+export function seek15sForward() {
+    seek(audio.currentTime + 15);
+}
+export function seek15sBackward() {
+    seek(audio.currentTime - 15);
+}
+
 export function seek(seconds: number) {
     audio.currentTime = Math.max(0, Math.min(audio.duration || 0, seconds));
 }

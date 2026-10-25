@@ -78,9 +78,8 @@ import {
   seek,
   play,
   currentSong,
-  onEnded
+  onEnded, increaseVolume, decreaseVolume, seek15sForward, seek15sBackward
 } from "./player";
-// import { onKey, Key, Mod } from "electrobun/bun";
 import PlayIcon from "@/icons/playIcon.svg";
 import PauseIcon from "@/icons/pauseIcon.svg";
 import SkipBackIcon from "@/icons/skipBackIcon.svg";
@@ -90,7 +89,7 @@ import SpeakerVolume from "@/icons/speakerVolume.svg";
 import SpeakerSilent from "@/icons/speakerSilent.svg";
 import SettingsIcon from "@/icons/settingsIcon.svg";
 import PlayRepeatIcon from "@/icons/playRepeatIcon.svg";
-import {computed, onMounted, ref, watch} from "vue";
+import {computed, onMounted, onUnmounted, ref, watch} from "vue";
 
 const store = useStore();
 
@@ -131,12 +130,35 @@ onMounted(() => {
       },
       {immediate: true},
   );
+  window.addEventListener("keydown", handleKeydown);
 });
 
-// onKey((e) => {
-//   if (e.keyCode === Key.Escape) close();
-//   if (e.modifiers & Mod.Cmd && charForKey(e.keyCode, 0) === "c") copy();
-// });
+onUnmounted(() => {
+  window.removeEventListener("keydown", handleKeydown);
+});
+
+const handleKeydown = (event: KeyboardEvent) => {
+  switch (event.key) {
+    case "ArrowUp":
+      increaseVolume();
+      break;
+    case "ArrowDown":
+      decreaseVolume();
+      break;
+    case "ArrowLeft":
+      seek15sBackward();
+      break;
+    case "ArrowRight":
+      seek15sForward()
+      break;
+    case " ":
+      playEvent();
+      break;
+    default:
+      return;
+  }
+  event.preventDefault();
+};
 
 const formatTime = (seconds: number) => {
   const mins = Math.floor(seconds / 60);

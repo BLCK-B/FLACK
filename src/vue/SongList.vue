@@ -16,7 +16,7 @@ import {onMounted, ref, watch} from "vue";
 import {Song} from "../types/musicTypes";
 import {useStore} from "./store";
 import {electrobun, getLaunchSong, onOpenFile} from "./rpc";
-import {play, cue, currentSong, restoreCurrentTime} from "./player";
+import {play, cue, currentSong, restoreCurrentTime, currentTime} from "./player";
 import {areQueuesEqual, getSongKey} from "./songUtils";
 
 const store = useStore();
@@ -108,6 +108,7 @@ const selectSong = (song: Song) => {
     return;
   }
   store.setSelectedSong(song);
+  currentTime.value = 0;
   play(song);
   store.setIsPlaying(true);
 }
