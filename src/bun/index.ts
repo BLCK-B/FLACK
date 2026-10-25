@@ -49,7 +49,7 @@ const musicRPC = BrowserView.defineRPC<RPC>({
     maxRequestTime: 10000,
     handlers: {
         requests: {
-            GETsongs: ({ dirPaths }) => getSongs(dirPaths),
+            GETsongs: ({dirPaths}) => getSongs(dirPaths),
             openDirectoryDialog: async () => {
                 const paths = await Utils.openFileDialog({
                     startingFolder: Utils.paths.home,
@@ -75,8 +75,10 @@ async function openFileInRunningApp(filepath: string): Promise<void> {
     try {
         const song = await getSong(filepath);
         musicRPC.send.openFile({song});
-        mainWindow?.unminimize();
-        mainWindow?.focus();
+        if (mainWindow?.isMinimized()) {
+            mainWindow?.unminimize();
+            mainWindow?.focus();
+        }
     } catch (err) {
         console.warn(`Failed to open file, ${err}`);
     }

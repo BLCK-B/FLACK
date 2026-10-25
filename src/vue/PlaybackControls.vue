@@ -80,6 +80,7 @@ import {
   currentSong,
   onEnded
 } from "./player";
+// import { onKey, Key, Mod } from "electrobun/bun";
 import PlayIcon from "@/icons/playIcon.svg";
 import PauseIcon from "@/icons/pauseIcon.svg";
 import SkipBackIcon from "@/icons/skipBackIcon.svg";
@@ -131,6 +132,11 @@ onMounted(() => {
       {immediate: true},
   );
 });
+
+// onKey((e) => {
+//   if (e.keyCode === Key.Escape) close();
+//   if (e.modifiers & Mod.Cmd && charForKey(e.keyCode, 0) === "c") copy();
+// });
 
 const formatTime = (seconds: number) => {
   const mins = Math.floor(seconds / 60);
