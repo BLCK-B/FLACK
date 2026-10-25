@@ -43,7 +43,6 @@ export type RPC = {
 };
 
 const launchFilePath = findLaunchFile();
-let launchSongConsumed = false;
 let mainWindow: BrowserWindow | undefined;
 
 const musicRPC = BrowserView.defineRPC<RPC>({
@@ -62,8 +61,7 @@ const musicRPC = BrowserView.defineRPC<RPC>({
                 return paths ?? [];
             },
             getLaunchSong: async () => {
-                if (!launchFilePath || launchSongConsumed) return null;
-                launchSongConsumed = true;
+                if (!launchFilePath) return null;
                 return await getSong(launchFilePath);
             },
         },
@@ -102,14 +100,12 @@ function handleRequest(req: Request): Response | Promise<Response> {
     return new Response("Not found", {status: 404});
 }
 
-let isPrimaryInstance = true;
 try {
     serve({
         port: 50001,
         fetch: handleRequest
     });
 } catch {
-    isPrimaryInstance = false;
     if (launchFilePath) {
         try {
             await fetch(`http://localhost:50001/open?filepath=${encodeURIComponent(launchFilePath)}`);
@@ -119,8 +115,6 @@ try {
     }
     Utils.quit();
 }
-
-// -----------------------------------------------------------
 
 const DEV_SERVER_PORT = 5173;
 const DEV_SERVER_URL = `http://localhost:${DEV_SERVER_PORT}`;
@@ -150,37 +144,35 @@ const simplifyVersion = (version: string) => {
     return parts.join(".");
 }
 
-if (isPrimaryInstance) {
-    const url = await getBusinessUrl();
+const url = await getBusinessUrl();
 
-    const {width, height} = Screen.getPrimaryDisplay().workArea;
+const {width, height} = Screen.getPrimaryDisplay().workArea;
 
-    const windowTitle = `FLACK v${simplifyVersion(config.app.version)}`;
+const windowTitle = `FLACK v${simplifyVersion(config.app.version)}`;
 
-    mainWindow = new BrowserWindow({
-        title: windowTitle,
-        url,
-        rpc: musicRPC,
-        frame: {
-            width,
-            height,
-            x: 0,
-            y: 0,
-        },
-        titleBarStyle: "default",
-    });
+mainWindow = new BrowserWindow({
+    title: windowTitle,
+    url,
+    rpc: musicRPC,
+    frame: {
+        width,
+        height,
+        x: 0,
+        y: 0,
+    },
+    titleBarStyle: "default",
+});
 
-    setTimeout(() => {
-        mainWindow?.maximize();
-    }, 0);
+setTimeout(() => {
+    mainWindow?.maximize();
+}, 0);
 
-    // Set the native window/taskbar icon on Windows (Electrobun has no icon API).
-    void setWindowIcon(windowTitle, config.build?.win?.icon);
+// Set the native window/taskbar icon on Windows (Electrobun has no icon API).
+void setWindowIcon(windowTitle, config.build?.win?.icon);
 
-    initMediaTray({
-        icon: config.build?.win?.icon,
-        onControl: (action: MediaAction) => {
-            musicRPC.send.mediaControl({action});
-        },
-    });
-}
+initMediaTray({
+    icon: config.build?.win?.icon,
+    onControl: (action: MediaAction) => {
+        musicRPC.send.mediaControl({action});
+    },
+});

@@ -19,7 +19,8 @@ const store = useStore();
 
 <style scoped>
 main {
-  min-height: 100vh;
+  height: 100vh;
+  display: grid;
   background: black;
   color: white;
   user-select: none;
@@ -32,13 +33,13 @@ html {
 }
 
 .container {
-  height: 88vh;
+  overflow-y: auto;
+  display: flex;
   flex-direction: column;
-  overflow-y: scroll;
 }
 
 .playback-controls {
-  height: 12vh;
+  height: 5.5rem;
   overflow: hidden;
 }
 </style>

@@ -1,10 +1,11 @@
 import type { ElectrobunConfig } from "electrobun";
+import packageJson from "./package.json";
 
 export default {
 	app: {
 		name: "FLACK",
 		identifier: "blck.flack",
-		version: "1.0.0",
+		version: packageJson.version,
 	},
 	runtime: {
 		exitOnLastWindowClosed: true,

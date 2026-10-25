@@ -7,7 +7,7 @@
     </div>
     <div class="control-row">
       <div class="song-info">
-        <img :src="store.selectedSong?.thumbnailUrl || 'icons/transparent.png'" alt="cover" class="thumbnail"/>
+        <img :src="store.selectedSong?.thumbnailUrl || 'icons/transparent.png'" alt="cover" class="thumbnail" decoding="async"/>
         <div class="song-info-text">
           <p> {{ store.selectedSong?.name || '' }} </p>
           <p class="smaller"> {{
@@ -46,6 +46,7 @@
           <SpeakerSilent v-else/>
         </span>
         <input
+            class="volume-range"
             type="range"
             min="0"
             max="1"
@@ -175,8 +176,9 @@ const onSeekClick = (event: MouseEvent) => {
 
 const playNewQueue = () => {
   store.shuffleQueue();
-  store.setSelectedSong(store.queue[0]);
-  play(store.queue[0]);
+  const firstSong = store.queue[0];
+  store.setSelectedSong(firstSong);
+  play(firstSong);
   store.setIsPlaying(true);
 };
 
@@ -226,12 +228,9 @@ p {
 
 .container {
   background-color: #1D1D1D;
-  display: flex;
-  height: 100%;
 }
 
 .playbar {
-  flex: 1;
   display: flex;
   align-items: center;
   padding: 0;
@@ -246,6 +245,7 @@ p {
 }
 
 .thumbnail {
+  object-fit: cover;
   height: 4rem;
   width: 4rem;
 }
@@ -371,6 +371,7 @@ button {
   .right-controls input[type="range"] {
     width: 80px;
   }
+
   .settings-btn {
     margin-left: 0;
   }
@@ -382,15 +383,12 @@ button {
   }
 }
 
-@media (max-width: 600px) {
-  .thumbnail {
-    display: none;
-  }
-}
-
-@media (max-width: 500px) {
+@media (max-width: 550px) {
   .middle-controls {
     gap: 0;
+  }
+  .volume-range {
+    display: none;
   }
 }
 </style>

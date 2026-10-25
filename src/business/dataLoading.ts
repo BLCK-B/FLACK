@@ -11,8 +11,7 @@ export async function getSong(filepath: string): Promise<Song> {
         const stats = fs.statSync(filepath);
         const date = common.date ? new Date(common.date) : stats.birthtime;
 
-        const artists =
-            common.artists || (common.artist ? [common.artist] : []);
+        const artists = common.artists || (common.artist ? [common.artist] : []);
 
         return {
             filepath,
@@ -77,7 +76,7 @@ export const getThumbnailStream = async (filepath: string): Promise<Response> =>
     return new Response(data, {
         headers: {
             "Content-Type": cover.format || "image/jpeg",
-            "Cache-Control": "public, max-age=31536000",
+            "Cache-Control": "public, max-age=604800",
         },
     });
 };
@@ -98,7 +97,6 @@ const getMimeType = (filepath: string): string => {
     const extension = path.extname(filepath).toLowerCase();
     return mimeTypes[extension] || "application/octet-stream";
 };
-
 
 export const getAudioStream = async (filepath: string, req: Request): Promise<Response> => {
     if (!filepath) {

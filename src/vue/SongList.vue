@@ -1,6 +1,7 @@
 <template>
   <div class="grid">
-    <div v-for="song in store.queue" :key="String(song.name + song.artists)" class="card" :class="{ selected: firstSelect === song, playing: currentSong === song }" @click="selectSong(song)">
+    <div v-for="song in store.queue" :key="String(song.name + song.artists)" class="card"
+         :class="{ selected: firstSelect === song, playing: currentSong === song }" @click="selectSong(song)">
       <img :src="song.thumbnailUrl" alt="cover" class="thumbnail" loading="lazy" decoding="async"/>
       <div class="songinfo">
         <p> {{ song.name }} </p>
@@ -23,36 +24,41 @@ const store = useStore();
 const firstSelect = ref<Song>();
 
 const loadQueue = async () => {
-  const stored = localStorage.getItem("music-paths");
-  if (!stored) return;
-  store.setDirPaths(JSON.parse(stored));
+  try {
+    const stored = localStorage.getItem("music-paths");
+    if (!stored) return;
+    store.setDirPaths(JSON.parse(stored));
 
-  const rawQueue = localStorage.getItem("queue");
-  const queue = rawQueue ? JSON.parse(rawQueue) : null;
-  const fetchedQueue = await electrobun.rpc!.request.GETsongs({dirPaths: store.dirPaths});
+    const rawQueue = localStorage.getItem("queue");
+    const queue = rawQueue ? JSON.parse(rawQueue) : null;
+    const fetchedQueue = await electrobun.rpc!.request.GETsongs({dirPaths: store.dirPaths});
 
-  if (queue) {
-    if (!areQueuesEqual(queue, fetchedQueue)) {
-      store.setQueue(fetchedQueue);
-      store.shuffleQueue();
-    }
-    else {
-      store.setQueue(queue);
-      const rawSelected = localStorage.getItem("selected-song");
-      const selectedSong = rawSelected ? JSON.parse(rawSelected) : null;
-      if (selectedSong) {
-        cueSong(selectedSong);
-        restoreCurrentTime();
+    if (queue) {
+      if (!areQueuesEqual(queue, fetchedQueue)) {
+        store.setQueue(fetchedQueue);
+        store.shuffleQueue();
+      } else {
+        store.setQueue(queue);
+        const rawSelected = localStorage.getItem("selected-song");
+        const selectedSong = rawSelected ? JSON.parse(rawSelected) : null;
+        if (selectedSong) {
+          cueSong(selectedSong);
+          restoreCurrentTime();
+        }
       }
+    } else {
+      store.setQueue(fetchedQueue);
     }
-  } else {
-    store.setQueue(fetchedQueue);
-  }
 
-  if (!store.selectedSong) {
-    cueSong(store.queue[0]);
+    if (!store.selectedSong) {
+      cueSong(store.queue[0]);
+    }
+    store.setIsPlaying(false);
+
+  } catch (error) {
+    console.error("Error loading queue:", error);
+    localStorage.removeItem("music-paths");
   }
-  store.setIsPlaying(false);
 };
 
 watch(
